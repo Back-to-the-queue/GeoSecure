@@ -1,5 +1,7 @@
 {
-  "name": "myReactApp",
-  "integrations": {},
+  "name": "GeoSecure",
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "react-vite"
 }
