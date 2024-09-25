@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
+import {logInOutline, personCircleOutline} from 'ionicons/icons';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ const Login: React.FC = () => {
 
       // Redirect to home or dashboard page after successful login
       setLoading(false);
-      history.push('/home'); // Assuming you have a 'home' page
+      history.push('/app');
     } catch (error) {
       console.error('Login failed:', error);
       setLoading(false);
@@ -34,23 +35,28 @@ const Login: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar color={'primary'}>
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent scrollY={false} className="ion-padding">
         <IonItem>
           <IonLabel position="floating">Email</IonLabel>
-          <IonInput type="email" value={email} onIonChange={(e) => setEmail(e.detail.value!)} required />
+          <IonInput className="ion-margin-top" type="email" value={email} onIonChange={(e) => setEmail(e.detail.value!)} required />
         </IonItem>
         <IonItem>
           <IonLabel position="floating">Password</IonLabel>
-          <IonInput type="password" value={password} onIonChange={(e) => setPassword(e.detail.value!)} required />
+          <IonInput className="ion-margin-top" type="password" value={password} onIonChange={(e) => setPassword(e.detail.value!)} required />
         </IonItem>
-        <IonButton expand="full" onClick={handleLogin} disabled={loading}>
+        <IonButton expand="full" onClick={handleLogin} disabled={loading} className="ion-margin-top">
           Login
+          <IonIcon icon={logInOutline} slot="end" />
         </IonButton>
         <IonLoading isOpen={loading} message={'Logging in...'} />
+        <IonButton routerLink="/signup" color={'secondary'} type="button" expand="block" className="ion-margin-top">
+          Create Account
+          <IonIcon icon={personCircleOutline} slot="end" />
+        </IonButton>
       </IonContent>
     </IonPage>
   );

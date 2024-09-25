@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon, IonBackButton, IonButtons } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
+import { checkmarkDoneOutline } from 'ionicons/icons';
 
 const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -25,20 +26,26 @@ const Signup: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar color={'primary'}>
+        <IonButtons slot="start">
+          <IonBackButton defaultHref="/" />
+        </IonButtons>
           <IonTitle>Signup</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent scrollY={false} className="ion-padding">
         <IonItem>
           <IonLabel position="floating">Email</IonLabel>
-          <IonInput type="email" value={email} onIonChange={(e) => setEmail(e.detail.value!)} required />
+          <IonInput className="ion-margin-top" type="email" value={email} onIonChange={(e) => setEmail(e.detail.value!)} required />
         </IonItem>
         <IonItem>
           <IonLabel position="floating">Password</IonLabel>
-          <IonInput type="password" value={password} onIonChange={(e) => setPassword(e.detail.value!)} required />
+          <IonInput className="ion-margin-top" type="password" value={password} onIonChange={(e) => setPassword(e.detail.value!)} required />
         </IonItem>
-        <IonButton expand="full" onClick={handleSignup} disabled={loading}>Sign Up</IonButton>
+        <IonButton expand="full" onClick={handleSignup} disabled={loading} className="ion-margin-top">
+          Sign Up
+          <IonIcon icon={checkmarkDoneOutline} slot="end" />
+        </IonButton>
         <IonLoading isOpen={loading} message={'Signing up...'} />
       </IonContent>
     </IonPage>
