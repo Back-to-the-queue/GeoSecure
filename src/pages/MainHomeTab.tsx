@@ -15,6 +15,7 @@ const MainHomeTab: React.FC = () => {
             </IonHeader>
             <IonContent className="ion-padding" fullscreen>
                 <div style={{ textAlign: 'center'}}>
+                    {/* all content on main page */}
                     <h1>Welcome to GeoSecure</h1>
                     <h2>Our Goal</h2>
                     <p>Our goal with this project is to design, implement, and evaluate a mobile application to detect driving habits using recently developed location privacy methods by the sponsors. 

@@ -6,6 +6,7 @@ import Settings from './Settings';
 import Home from './Home';
 
 const Menu: React.FC = () => {
+    //define paths for menu items and have in an array
     const paths = [
         {name: 'Home', url: '/app/home', icon: homeOutline},
         {name: 'Setting', url: '/app/settings', icon: settingsOutline},
@@ -13,16 +14,21 @@ const Menu: React.FC = () => {
 
     return (
         <IonPage>
+            {/* create side menu and the main content area */}
             <IonSplitPane contentId="main">
+            {/* IonMenu is the side menu that will hold the navigation items */}
             <IonMenu contentId="main">
                 <IonHeader>
                     <IonToolbar color={'secondary'}>
                         <IonTitle>Menu</IonTitle>
                     </IonToolbar>
                 </IonHeader>
+                {/* IonContent is the main content of the menu */}
                 <IonContent>
+                    {/* loop through the paths array to create menu items */}
                     {paths.map((item, index) => (
                         <IonMenuToggle key={index} autoHide={false}>
+                            {/* IonItem represents each clickable menu option */}
                             <IonItem detail={true} routerLink={item.url} routerDirection="none">
                                 <IonIcon slot="start" icon={item.icon} />
                                 {item.name}
@@ -30,6 +36,7 @@ const Menu: React.FC = () => {
                         </IonMenuToggle>
                     ))}
 
+                    {/* logout button to allow users to logout */}
                     <IonMenuToggle autoHide={false}>
                             <IonButton expand="full" routerLink='/' routerDirection="root">
                                 <IonIcon slot="start" icon={logOutOutline} />
