@@ -1,4 +1,4 @@
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidLeave } from '@ionic/react';
+import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidEnter, useIonViewDidLeave } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
@@ -39,6 +39,7 @@ const Profile: React.FC = () => {
         }
     }
 
+    // Encrypts the trajectory
     const encryptTrajectory = (trajectoryData:number[][]) => {
         // Multiply the data points to remove the decimal places
         trajectoryData.forEach((entry, i) => {
@@ -74,6 +75,7 @@ const Profile: React.FC = () => {
         uploadTrajectory(key, encryptedTrajectory);
     }
 
+    // Uploads the trajectory to the database
     const uploadTrajectory = (key: number[], encryptedTrajectory: number[][]) => {
         // TODO: Upload trajectory data to database
 
@@ -81,43 +83,49 @@ const Profile: React.FC = () => {
         trajectoryData = [];
     }
 
-    // Check permissions and get the location when the component mounts
-    useEffect(() => {
-        const checkPermissions = async () => {
-            if ( Capacitor.getPlatform() === 'web') {
-                // For web, use the browser's Geolocation API
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            tracker = setInterval(updateUserLocation, 5000);
-                        },
-                        (error) => {
-                            setLocationError('Location access denied.'); // Handle error
-                        }
-                    );
-                } else {
-                    setLocationError('Geolocation is not supported by this browser.');
-                }
-            } else {
-                // For mobile platforms, check permissions
-                const permissions = await Geolocation.checkPermissions();
-                if (permissions.location === 'granted') {
-                    tracker = setInterval(updateUserLocation, 5000);
-                } else {
-                    // Request permissions
-                    const requestResult = await Geolocation.requestPermissions();
-                    if (requestResult.location === 'granted') {
+    // Check permissions and begin tracking location
+    const checkPermissions = async () => {
+        if ( Capacitor.getPlatform() === 'web') {
+            // For web, use the browser's Geolocation API
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
                         tracker = setInterval(updateUserLocation, 5000);
-                    } else {
-                        setLocationError('Location access denied.');
+                        console.log("Began tracking location");
+                    },
+                    (error) => {
+                        setLocationError('Location access denied.'); // Handle error
                     }
+                );
+            } else {
+                setLocationError('Geolocation is not supported by this browser.');
+            }
+        } else {
+            // For mobile platforms, check permissions
+            const permissions = await Geolocation.checkPermissions();
+            if (permissions.location === 'granted') {
+                tracker = setInterval(updateUserLocation, 5000);
+                console.log("Began tracking location");
+            } else {
+                // Request permissions
+                const requestResult = await Geolocation.requestPermissions();
+                if (requestResult.location === 'granted') {
+                    tracker = setInterval(updateUserLocation, 5000);
+                    console.log("Began tracking location");
+                } else {
+                    setLocationError('Location access denied.');
                 }
             }
-        };
+        }
+    };
+
+    // Check permissions and get the location when the component mounts
+    useIonViewDidEnter(() => {
         checkPermissions();
     }, []);
 
     useIonViewDidLeave(() => {
+        console.log("Stopped tracking location");
         clearInterval(tracker);
     });
 
