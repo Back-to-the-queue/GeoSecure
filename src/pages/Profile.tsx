@@ -1,28 +1,87 @@
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidLeave } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { Geolocation } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 
 const Profile: React.FC = () => {
-    const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+    let trajectoryData: number[][] = [];
+    let tracker: string | number | NodeJS.Timeout | undefined;
 
-    //function to get the user's location
-    const getUserLocation = async () => {
+    // Function to update the user's location
+    const updateUserLocation = async () => {
         try {
             const position = await Geolocation.getCurrentPosition();
             setLocation({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
+                timestamp: position.timestamp
             });
-            setLocationError(null); //reset error if successful
+            recordUserLocation(position);
+            setLocationError(null); // Reset error if successful
         } catch (error) {
             console.error('Error getting location', error);
-            setLocationError('Unable to retrieve location.'); //set error message
+            setLocationError('Unable to retrieve location.'); // Set error message
         }
     };
 
-    //check permissions and get the location when the component mounts
+    // Records user latitude, longitude, and timestamp of recording
+    const recordUserLocation = (position: Position) => {
+        const entry = [position.coords.latitude,
+            position.coords.longitude,
+            position.timestamp];
+        trajectoryData.push(entry);
+        console.log("Recorded user location: " + entry);
+        if (trajectoryData.length >= 10)
+        {
+            encryptTrajectory(trajectoryData);
+        }
+    }
+
+    const encryptTrajectory = (trajectoryData:number[][]) => {
+        // Multiply the data points to remove the decimal places
+        trajectoryData.forEach((entry, i) => {
+            // Take one data point and multiply it
+            entry.forEach((stat, i) => {
+                stat = stat * 10000;
+                entry[i] = stat;
+            });
+            trajectoryData[i] = entry;
+        });
+        console.log("Multiplied user location: " + trajectoryData);
+
+        // Subtract each point by its previous
+        for (let entry = trajectoryData.length-1; entry > 0; entry--)
+        {
+            // Calculate the difference between a point and the previous point
+            const newEntry = trajectoryData[entry].map((stat, i) => {
+                return stat - trajectoryData[entry-1][i];
+            });
+            // Overwrite the point
+            trajectoryData[entry] = newEntry;
+        }
+
+        // Store the first point as a key
+        const key = trajectoryData[0];
+        // Store encrypted data separately
+        const encryptedTrajectory = trajectoryData.slice(1);
+
+        console.log("Trajectory key: " + key);
+        console.log("Encrypted Trajectory: " + encryptedTrajectory);
+        
+        // Upload trajectory
+        uploadTrajectory(key, encryptedTrajectory);
+    }
+
+    const uploadTrajectory = (key: number[], encryptedTrajectory: number[][]) => {
+        // TODO: Upload trajectory data to database
+
+        // Clear trajectory after it is uploaded
+        trajectoryData = [];
+    }
+
+    // Check permissions and get the location when the component mounts
     useEffect(() => {
         const checkPermissions = async () => {
             if ( Capacitor.getPlatform() === 'web') {
@@ -30,11 +89,7 @@ const Profile: React.FC = () => {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
-                            setLocation({
-                                latitude: position.coords.latitude,
-                                longitude: position.coords.longitude,
-                            });
-                            setLocationError(null); // Reset error if successful
+                            tracker = setInterval(updateUserLocation, 5000);
                         },
                         (error) => {
                             setLocationError('Location access denied.'); // Handle error
@@ -47,12 +102,12 @@ const Profile: React.FC = () => {
                 // For mobile platforms, check permissions
                 const permissions = await Geolocation.checkPermissions();
                 if (permissions.location === 'granted') {
-                    getUserLocation();
+                    tracker = setInterval(updateUserLocation, 5000);
                 } else {
                     // Request permissions
                     const requestResult = await Geolocation.requestPermissions();
                     if (requestResult.location === 'granted') {
-                        getUserLocation();
+                        tracker = setInterval(updateUserLocation, 5000);
                     } else {
                         setLocationError('Location access denied.');
                     }
@@ -61,6 +116,10 @@ const Profile: React.FC = () => {
         };
         checkPermissions();
     }, []);
+
+    useIonViewDidLeave(() => {
+        clearInterval(tracker);
+    });
 
     return (
         <IonPage>
