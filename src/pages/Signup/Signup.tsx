@@ -5,6 +5,7 @@ import axios, {AxiosResponse, AxiosError} from 'axios';
 import { checkmarkDoneOutline } from 'ionicons/icons';
 
 const Signup: React.FC = () => {
+  const API_BASE_URL = 'https://1effu929g3.execute-api.us-east-1.amazonaws.com/LI_SU';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,7 @@ const Signup: React.FC = () => {
   const handleSignup = async () => {
     setLoading(true);
 
-    axios.post('http://localhost:5001/auth/signup', { email, password })
+    axios.post('${API_BASE_URL}/signup', { email, password })
     .then((response: AxiosResponse) => {
       console.log(response.data);
       setLoading(false);

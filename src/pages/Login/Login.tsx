@@ -5,6 +5,7 @@ import axios, {AxiosResponse, AxiosError} from 'axios';
 import {logInOutline, personCircleOutline} from 'ionicons/icons';
 
 const Login: React.FC = () => {
+  const API_BASE_URL = 'https://1effu929g3.execute-api.us-east-1.amazonaws.com/LI_SU';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,24 +15,20 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     
-    // Send login request to the backend
-    axios.post('http://localhost:5001/auth/login', { email, password })
+    axios.post('${API_BASE_URL}/login', { email, password })
     .then((response: AxiosResponse) => {
-      // Extract the token from response (assuming JWT-based authentication)
+      //Extract the token from response (assuming JWT-based authentication)
       const { token } = response.data;
-
-      // Save the token to localStorage for future authenticated requests
+      //Save the token to localStorage for future authenticated requests
       localStorage.setItem('authToken', token);
-
-      // Redirect to home or dashboard page after successful login
+      //Redirect to home or dashboard page after successful login
       setLoading(false);
       history.push('/app');
     })
     .catch((error: AxiosError) => {
       console.error('Login failed:', error);
       setLoading(false);
-      
-      // Handle error (e.g., show a message to the user)
+      //Handle error (e.g., show a message to the user)
       showError("bad-credentials");
     });
   };
