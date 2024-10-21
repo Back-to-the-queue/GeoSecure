@@ -1,5 +1,5 @@
-const util = require('../utils/util');
-const auth = require('../utils/auth');
+const util = require('../routes/util');
+const auth = require('../routes/auth');
 
 function verify(requestBody){
     if(!requestBody.user || !requestBody.user.username || !requestBody.token){
