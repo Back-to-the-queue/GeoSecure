@@ -15,7 +15,7 @@ const Signup: React.FC = () => {
   const handleSignup = async () => {
     setLoading(true);
 
-    axios.post('${API_BASE_URL}/signup', { email, password })
+    axios.post(`${API_BASE_URL}/signup`, { email, password })
     .then((response: AxiosResponse) => {
       console.log(response.data);
       setLoading(false);
