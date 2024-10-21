@@ -9,10 +9,11 @@ const auth = require('../routes/auth');
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'geosecure-users';
 
-async function login(user) {
+async function login(userInfo) {
     const username = userInfo.username
     const password = userInfo.password
-    if(!user || !username || !password){
+
+    if(!userInfo || !username || !password){
         return util.buildResponse(401, {
             message: 'username and password are required'
         })

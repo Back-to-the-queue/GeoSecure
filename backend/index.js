@@ -8,7 +8,7 @@ const verifyPath = '/verify';
 const loginPath = '/login';
 const signupPath = '/signup';
 
-    exports.handler = async (event) => {
+export const handler = async (event) => {
     console.log('Request Event: ', event);
     let response;
     switch(true) {
