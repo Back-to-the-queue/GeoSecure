@@ -6,7 +6,7 @@ import { Capacitor } from '@capacitor/core';
 let trajectoryData: number[][] = [];
 let tracker: string | number | NodeJS.Timeout | undefined;
 
-const Profile: React.FC = () => {
+const Location: React.FC = () => {
     const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [isTracking, setTracking] = useState(false);
@@ -148,7 +148,7 @@ const Profile: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Profile</IonTitle>
+                    <IonTitle>Location</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding" fullscreen>
@@ -163,7 +163,7 @@ const Profile: React.FC = () => {
                             <p>Longitude: {location.longitude}</p>
                         </>
                     ) : (
-                        <h1>Getting Location...</h1>
+                        <h1>Track Your Location!</h1>
                     )}
                 </div>
                 <IonButton id='track-status' expand="full" onClick={toggleTracking} className="ion-margin-top">
@@ -174,4 +174,4 @@ const Profile: React.FC = () => {
     );
 };
 
-export default Profile;
+export default Location;
