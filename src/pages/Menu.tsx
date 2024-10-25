@@ -48,6 +48,7 @@ const Menu: React.FC = () => {
                 </IonContent>
             </IonMenu>
 
+            {/* create the routes to the pages on our menu */}
             <IonRouterOutlet id="main">
                 <Route exact path="/app/home" component={Home} />
                 <Route path = "/app/settings" component={Settings} />
