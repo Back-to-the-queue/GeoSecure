@@ -1,6 +1,6 @@
 const loginService = require('./models/Login');
 const registerService = require('./models/Register');
-const verifyService = require('./models/Verify');
+//const verifyService = require('./models/Verify');
 const util = require('./routes/util')
 
 const healthPath = '/health';

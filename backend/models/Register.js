@@ -24,13 +24,15 @@ async function register(userInfo) {
             message: 'username already exists, please choose another username'
         })
     }
-    const encryptedPW = bcrypt.hashSync(password.trim, 10);
+    //const encryptedPW = bcrypt.hashSync(password.trim, 10);
     const user = {
         name: name,
         email: email,
         username: username.toLowerCase().trim(),
-        password: encryptedPW
+        password: password
     }
+    return util.buildResponse(200, {username: user});
+/*
     const saveUserResponse  = await saveUser(user);
     if(!saveUserResponse){
         return util.buildResponse(503, {
@@ -38,7 +40,8 @@ async function register(userInfo) {
         })
     }
     return util.buildResponse(200, {username: user});
-}
+    */
+   }
 
 async function getUser(username) {
     const params = {
