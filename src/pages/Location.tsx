@@ -1,13 +1,35 @@
-import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidEnter, useIonViewDidLeave } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidEnter, useIonViewDidLeave } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 
-const Profile: React.FC = () => {
+let trajectoryData: number[][] = [];
+let tracker: string | number | NodeJS.Timeout | undefined;
+
+const Location: React.FC = () => {
     const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
-    let trajectoryData: number[][] = [];
-    let tracker: string | number | NodeJS.Timeout | undefined;
+    const [isTracking, setTracking] = useState(false);
+
+    // Function to toggle tracking location
+    const toggleTracking = () => {
+        checkPermissions();
+        // Begin tracking if permissions granted and not tracking
+        if (locationError == null && !isTracking)
+        {
+            tracker = setInterval(updateUserLocation, 5000);
+            setTracking(true);
+            console.log("Began tracking location. Tracking ID=" + tracker);
+            document.getElementById('track-status')!.textContent = "Stop Tracking";
+        }
+        else { // Stop tracking if already tracking, or permissions not granted
+            clearInterval(tracker);
+            setTracking(false);
+            trajectoryData = []; // Clear stored data
+            console.log("Stopped tracking location. Tracking ID=" + tracker);
+            document.getElementById('track-status')!.textContent = "Start Tracking";
+        }
+    }
 
     // Function to update the user's location
     const updateUserLocation = async () => {
@@ -33,7 +55,7 @@ const Profile: React.FC = () => {
             position.timestamp];
         trajectoryData.push(entry);
         console.log("Recorded user location: " + entry);
-        if (trajectoryData.length >= 10)
+        if (trajectoryData.length >= 10) // Change this to 100 in final product
         {
             encryptTrajectory(trajectoryData);
         }
@@ -83,15 +105,14 @@ const Profile: React.FC = () => {
         trajectoryData = [];
     }
 
-    // Check permissions and begin tracking location
+    // Check permissions
     const checkPermissions = async () => {
-        if ( Capacitor.getPlatform() === 'web') {
+        if (Capacitor.getPlatform() === 'web') {
             // For web, use the browser's Geolocation API
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        tracker = setInterval(updateUserLocation, 5000);
-                        console.log("Began tracking location");
+                        setLocationError(null);
                     },
                     (error) => {
                         setLocationError('Location access denied.'); // Handle error
@@ -103,31 +124,22 @@ const Profile: React.FC = () => {
         } else {
             // For mobile platforms, check permissions
             const permissions = await Geolocation.checkPermissions();
-            if (permissions.location === 'granted') {
-                tracker = setInterval(updateUserLocation, 5000);
-                console.log("Began tracking location");
-            } else {
-                // Request permissions
+            if (permissions.location !== 'granted') {
                 const requestResult = await Geolocation.requestPermissions();
                 if (requestResult.location === 'granted') {
-                    tracker = setInterval(updateUserLocation, 5000);
-                    console.log("Began tracking location");
-                } else {
+                    setLocationError(null);
+                }
+                else {
                     setLocationError('Location access denied.');
                 }
-            }
+            } 
         }
     };
 
-    // Check permissions and get the location when the component mounts
+    // Check permissions when the component mounts
     useIonViewDidEnter(() => {
         checkPermissions();
     }, []);
-
-    useIonViewDidLeave(() => {
-        console.log("Stopped tracking location");
-        clearInterval(tracker);
-    });
 
     return (
         <IonPage>
@@ -136,7 +148,7 @@ const Profile: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Profile</IonTitle>
+                    <IonTitle>Location</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding" fullscreen>
@@ -151,12 +163,15 @@ const Profile: React.FC = () => {
                             <p>Longitude: {location.longitude}</p>
                         </>
                     ) : (
-                        <h1>Getting Location...</h1>
+                        <h1>Track Your Location!</h1>
                     )}
                 </div>
+                <IonButton id='track-status' expand="full" onClick={toggleTracking} className="ion-margin-top">
+                    Start Tracking
+                </IonButton>
             </IonContent>
         </IonPage>
     );
 };
 
-export default Profile;
+export default Location;

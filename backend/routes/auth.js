@@ -22,7 +22,7 @@ function verifyToken(username, token){
     if (response.username !== username) {
       return {
           verified: false,
-          message: 'username mismatch'
+          message: 'username does not match'
       };
   }
 
