@@ -7,16 +7,16 @@ const bcrypt = require('bcryptjs');
 const auth = require('../routes/auth');
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
-const userTable = 'geosecure-users';
+const userTable = 'geo-users';
 
-async function login(userInfo) {
-    const username = userInfo.username;
-    const password = userInfo.password;
+async function login(user) {
+    const username = user.username;
+    const password = user.password;
     
-    if (!userInfo || !username || !password) {
+    if (!user || !username || !password) {
         return util.buildResponse(401, {
             message: 'Username and password are required'
-        });
+        })
     }
 
     const dynamoUser = await getUser(username.toLowerCase().trim());
@@ -28,17 +28,21 @@ async function login(userInfo) {
         return util.buildResponse(403, { message: 'Password is incorrect' });
     }
 
-    // Do not redeclare userInfo here
-    const token = auth.generateToken({
+    const userInfo = { 
         username: dynamoUser.username,
         name: dynamoUser.name
-    });
+    }
+
+    const token = auth.generateToken(userInfo)
+
+    // Do not redeclare userInfo here
+    /*const token = auth.generateToken({
+        username: dynamoUser.username,
+        name: dynamoUser.name
+    });*/
 
     const response = {
-        user: {
-            username: dynamoUser.username,
-            name: dynamoUser.name
-        },
+        user: userInfo,
         token: token
     };
     

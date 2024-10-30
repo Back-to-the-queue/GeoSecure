@@ -1,4 +1,3 @@
-
 const jwt  = require('jsonwebtoken');
 
 function generateToken(userInfo){
@@ -16,9 +15,17 @@ function verifyToken(username, token){
     if(error){
       return{
         verified: false,
-        message: 'invalid user'
+        message: 'invalid token'
       }
     }
+
+    if (response.username !== username) {
+      return {
+          verified: false,
+          message: 'username mismatch'
+      };
+  }
+
     return{
       verified: true,
       message: 'verified'
