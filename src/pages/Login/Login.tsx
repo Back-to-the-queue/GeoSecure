@@ -5,7 +5,7 @@ import axios, {AxiosResponse, AxiosError} from 'axios';
 import {logInOutline, personCircleOutline} from 'ionicons/icons';
 
 const Login: React.FC = () => {
-  const API_BASE_URL = 'https://1effu929g3.execute-api.us-east-1.amazonaws.com/LI_SU';
+  const API_BASE_URL = 'https://mweziomrrb.execute-api.us-east-1.amazonaws.com/prod';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     
-    axios.post('${API_BASE_URL}/login', { email, password })
+    axios.post(`${API_BASE_URL}/login`, { email, password })
     .then((response: AxiosResponse) => {
       //Extract the token from response (assuming JWT-based authentication)
       const { token } = response.data;
