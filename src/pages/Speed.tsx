@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonButtons, IonMenuButton } from '@ionic/react';
 import { Geolocation } from '@capacitor/geolocation';
 import { Plugins } from '@capacitor/core'; // For managing background tasks and wake locks
 import './Home.css';
@@ -71,7 +71,7 @@ const calculateSpeed = (lat1: number, lon1: number, time1: number, lat2: number,
   return speedInKmh;
 };
 
-const Home: React.FC = () => {
+const Speed: React.FC = () => {
   const [speed, setSpeed] = useState<number>(0);
   const [tracking, setTracking] = useState<boolean>(false);
   const lastPosition = useRef<{ lat: number; lon: number; timestamp: number } | null>(null);
@@ -183,17 +183,23 @@ const Home: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Track</IonTitle>
+        <IonToolbar color={'primary'}>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle>Speed</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="ion-padding">
+      <div style={{ textAlign: 'center'}}>
+        <h1>Track Your Speed!</h1>
+      </div>
         {!tracking ? (
-          <IonButton onClick={startTracking}>Click to Start</IonButton>
+          <IonButton expand="full" onClick={startTracking} className="ion-margin-top">Start Tracking</IonButton>
         ) : (
           <>
             <h1>Your Speed: {speed.toFixed(2)} km/h</h1>
-            <IonButton onClick={stopTracking}>Click to Stop</IonButton>
+            <IonButton onClick={stopTracking}>Stop Tracking</IonButton>
           </>
         )}
       </IonContent>
@@ -201,4 +207,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Track;
+export default Speed;
