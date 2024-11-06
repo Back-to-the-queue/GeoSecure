@@ -6,16 +6,24 @@ import {logInOutline, personCircleOutline} from 'ionicons/icons';
 
 const Login: React.FC = () => {
   const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, showError] = useState('');
   const history = useHistory();
 
+  /*axios.get(`${API_BASE_URL}/health`).then
+  ((response: AxiosResponse) => {
+    console.log(response);
+  }
+  );*/
+
+
   const handleLogin = async () => {
     setLoading(true);
     
-    axios.post(`${API_BASE_URL}/login`, { email, password })
+    axios.post(`${API_BASE_URL}/login`, { username, password }
+    )
     .then((response: AxiosResponse) => {
       //Extract the token from response (assuming JWT-based authentication)
       const { token } = response.data;
@@ -42,8 +50,8 @@ const Login: React.FC = () => {
       </IonHeader>
       <IonContent scrollY={false} className="ion-padding">
         <IonItem>
-          <IonLabel position="floating">Email</IonLabel>
-          <IonInput className="ion-margin-top" type="email" value={email} onIonInput={(e) => setEmail(e.detail.value!)} required />
+          <IonLabel position="floating">Username</IonLabel>
+          <IonInput className="ion-margin-top" type="text" value={username} onIonInput={(e) => setUsername(e.detail.value!)} required />
         </IonItem>
         <IonItem>
           <IonLabel position="floating">Password</IonLabel>

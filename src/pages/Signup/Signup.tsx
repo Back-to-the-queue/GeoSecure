@@ -23,7 +23,7 @@ const Signup: React.FC = () => {
     {
       setLoading(true);
 
-      axios.post(`${API_BASE_URL}/signup`, {email, username, password})
+      axios.post(`${API_BASE_URL}/register`, {email, username, password})
       .then((response: AxiosResponse) => {
         console.log(response.data);
         setLoading(false);
@@ -33,11 +33,11 @@ const Signup: React.FC = () => {
         console.error('Error during signup:', error);
         setLoading(false);
   
-        if (error.response!.status == 500)
+        if (error.response!.status == 400)
         {
           showError("empty-field");
         }
-        else if (error.response!.status == 400)
+        else if (error.response!.status == 401)
         {
           showError("existing-account");
         }
