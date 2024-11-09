@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon, IonAlert } from '@ionic/react';
+import React, { useEffect, useState } from 'react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon, IonAlert, useIonViewWillEnter } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import axios, {AxiosResponse, AxiosError} from 'axios';
 import {logInOutline, personCircleOutline} from 'ionicons/icons';
@@ -17,6 +17,12 @@ const Login: React.FC = () => {
     console.log(response);
   }
   );*/
+
+  //clear input fields
+  useIonViewWillEnter(() => {
+    setUsername('');
+    setPassword('');
+  });
 
 
   const handleLogin = async () => {

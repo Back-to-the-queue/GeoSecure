@@ -1,9 +1,26 @@
-import { IonAlert, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonMenuButton, IonPage, IonText, IonTitle, IonToggle, IonToolbar } from '@ionic/react';
-import { chevronForwardCircleOutline, fingerPrintOutline, notificationsOutline, personOutline } from 'ionicons/icons';
+import { IonAlert, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonMenuButton, IonPage, IonText, IonTitle, IonToggle, IonToolbar } from '@ionic/react';
+import { chevronForwardCircleOutline, closeCircleOutline, fingerPrintOutline, notificationsOutline, personOutline } from 'ionicons/icons';
 import React, { useState } from 'react';
+import { useHistory } from 'react-router';
 
 const Settings: React.FC = () => {
-    const [showAlert, setShowAlert] = useState(false);
+    const history = useHistory();
+    const [showPrivacyAlert, setShowPrivacyAlert] = useState(false);
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
+    const handleDeleteAccount = () => {
+        setShowDeleteAlert(true);
+      };
+
+      const handlePrivacyAlert = () => {
+        setShowPrivacyAlert(true);
+      };
+    
+      const confirmDelete = () => {
+        setShowDeleteAlert(false);
+        //navigate to login page
+        history.push('/login');
+      };
 
     return (
         <IonPage>
@@ -36,27 +53,50 @@ const Settings: React.FC = () => {
                 </IonLabel>
                 <IonToggle slot="end"></IonToggle>
             </IonItem>
-            <IonItem>
-                    <IonIcon icon={personOutline} />
-                    <IonLabel>
-                        Adjust Privacy Settings
-                        <IonText color="medium" style={{ display: 'block', fontSize: 'small' }}>
-                            Customize privacy preferences for your account.
-                        </IonText>
-                    </IonLabel>
-                    <IonIcon
-                        icon={chevronForwardCircleOutline}
-                        slot="end"
-                        onClick={() => setShowAlert(true)}
-                    />
-                </IonItem>
-                <IonAlert
-                    isOpen={showAlert}
-                    onDidDismiss={() => setShowAlert(false)}
-                    header={'Error'}
-                    message={'Currently not available'}
-                    buttons={['OK']}
+            <IonItem button onClick={handlePrivacyAlert} lines="full">
+                <IonIcon icon={personOutline} />
+                <IonLabel>
+                     Adjust Privacy Settings
+                    <IonText color="medium" style={{ display: 'block', fontSize: 'small' }}>
+                        Customize privacy preferences for your account.
+                    </IonText>
+                </IonLabel>
+                <IonIcon
+                    icon={chevronForwardCircleOutline}
+                    slot="end"
                 />
+            </IonItem>
+            <IonAlert
+                isOpen={showPrivacyAlert}
+                onDidDismiss={() => setShowPrivacyAlert(false)}
+                header={'Error'}
+                message={'Currently not available'}
+                buttons={['OK']}
+            />
+            
+            <IonButton expand="full" color="danger" onClick={handleDeleteAccount}>
+            <IonIcon slot="start" icon={closeCircleOutline} />
+            Delete Account
+            </IonButton>
+
+            <IonAlert
+                isOpen={showDeleteAlert}
+                onDidDismiss={() => setShowDeleteAlert(false)}
+                header={'Are you sure?'}
+                message={'This action cannot be undone.'}
+                buttons={[
+                {
+                    text: 'No',
+                    role: 'cancel',
+                    handler: () => setShowDeleteAlert(false),
+                },
+                {
+                    text: 'Yes',
+                    handler: confirmDelete,
+                }
+            ]}
+            />
+
             </IonContent>
         </IonPage>
     );

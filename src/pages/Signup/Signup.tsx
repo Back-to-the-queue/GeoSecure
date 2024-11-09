@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon, IonBackButton, IonButtons, IonAlert, IonList } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel, IonButton, IonLoading, IonIcon, IonBackButton, IonButtons, IonAlert, IonList, useIonViewWillEnter } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import axios, {AxiosResponse, AxiosError} from 'axios';
 import { checkmarkDoneOutline } from 'ionicons/icons';
@@ -13,6 +13,12 @@ const Signup: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, showError] = useState('');
   const history = useHistory();
+
+  //clear input fields
+  useIonViewWillEnter(() => {
+    setUsername('');
+    setPassword('');
+  });
 
   const handleSignup = async () => {
     if (password != confirmPassword)
