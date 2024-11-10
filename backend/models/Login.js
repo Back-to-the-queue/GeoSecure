@@ -1,67 +1,76 @@
+// Login.js
+
 const AWS = require('aws-sdk');
-AWS.config.update({
-    region: 'us-east-1'
-})
+const bcrypt = require('bcrypt');
 const util = require('../routes/util');
-const bcrypt = require('bcryptjs');
 const auth = require('../routes/auth');
+const User = require('./User');
+
+AWS.config.update({
+  region: 'us-east-1'
+});
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'geo-users';
 
-async function login(user) {
-    const username = user.username;
-    const password = user.password;
-    
-    if (!user || !username || !password) {
-        return util.buildResponse(401, {
-            message: 'Username and password are required'
-        })
+const login = async (loginBody) => {
+  const { username, password } = loginBody;
+
+  if (!username || !password) {
+    return util.buildResponse(401, { message: 'Username and password are required' });
+  }
+
+  try {
+    // First, attempt to retrieve the user from DynamoDB
+    const dynamoUser = await getUserFromDynamoDB(username.toLowerCase().trim());
+    let userInfo;
+
+    if (dynamoUser && dynamoUser.username) {
+      // User found in DynamoDB
+      const isPasswordMatch = await bcrypt.compare(password, dynamoUser.password);
+      if (!isPasswordMatch) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+      userInfo = { username: dynamoUser.username, name: dynamoUser.name };
+    } else {
+      // If not found in DynamoDB, check MongoDB
+      const mongoUser = await User.findOne({ username: username.toLowerCase().trim() });
+      if (!mongoUser) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+
+      // Check if the password matches in MongoDB
+      const isPasswordMatch = await bcrypt.compare(password, mongoUser.password);
+      if (!isPasswordMatch) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+      userInfo = { username: mongoUser.username, name: mongoUser.name };
     }
 
-    const dynamoUser = await getUser(username.toLowerCase().trim());
-    if (!dynamoUser || !dynamoUser.username) {
-        return util.buildResponse(403, { message: 'User does not exist' });
-    }
+    // Generate token for authenticated user
+    const token = auth.generateToken(userInfo);
 
-    if (!bcrypt.compareSync(password, dynamoUser.password)) {
-        return util.buildResponse(403, { message: 'Password is incorrect' });
-    }
+    return util.buildResponse(200, { user: userInfo, token: token });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    return util.buildResponse(500, { message: 'Internal server error' });
+  }
+};
 
-    const userInfo = { 
-        username: dynamoUser.username,
-        name: dynamoUser.name
-    }
+// Retrieve user from DynamoDB
+async function getUserFromDynamoDB(username) {
+  const params = {
+    TableName: userTable,
+    Key: { username }
+  };
 
-    const token = auth.generateToken(userInfo)
-
-    // Do not redeclare userInfo here
-    /*const token = auth.generateToken({
-        username: dynamoUser.username,
-        name: dynamoUser.name
-    });*/
-
-    const response = {
-        user: userInfo,
-        token: token
-    };
-    
-    return util.buildResponse(200, response);
+  try {
+    const response = await dynamodb.get(params).promise();
+    return response.Item;
+  } catch (error) {
+    console.error('Error retrieving user from DynamoDB:', error);
+    return null;
+  }
 }
 
-async function getUser(username) {
-    const params = {
-        TableName: userTable,
-        Key: {
-            username: username
-        }
-    }
-
-    return await dynamodb.get(params).promise().then(response => {
-        return response.Item;
-    }, error => {
-        console.error('There is an error', error);
-    })
-}
-
-module.exports.login = login;
+module.exports = { login };
