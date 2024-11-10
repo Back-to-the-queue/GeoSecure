@@ -1,73 +1,101 @@
-const AWS = require('aws-sdk');
-AWS.config.update({
-    region: 'us-east-1'
-})
-const util = require('../routes/util')
+// Register.js
 
-const bcrypt = require('bcryptjs');
+const AWS = require('aws-sdk');
+const bcrypt = require('bcrypt');
+const util = require('../routes/util');
+const User = require('./User');
+const saltRounds = 10;
+
+// Set AWS DynamoDB region
+AWS.config.update({
+  region: 'us-east-1'
+});
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'geo-users';
 
-async function register(userInfo) {
-    const name = userInfo.name
-    const email = userInfo.email
-    const username = userInfo.username
-    const password = userInfo.password
-    
-    if(!username || !name || !email || !password){
-        return util.buildResponse(401, {
-            message: 'All fields are required'
-        })
-    }
-    
-    const dynamoUser = await getUser(username.toLowerCase().trim());
-    if(dynamoUser && dynamoUser.username){
-        return util.buildResponse(401, {
-            message: 'username already exists, please choose another username'
-        })
-    }
-    const encryptedPW = bcrypt.hashSync(password.trim(), 10);
-    const user = {
-        name: name,
-        email: email,
-        username: username.toLowerCase().trim(),
-        password: encryptedPW
+const register = async (registerBody) => {
+  const { name, email, username, password } = registerBody;
+
+  if (!username || !name || !email || !password) {
+    return util.buildResponse(401, { message: 'All fields are required' });
+  }
+
+  try {
+    // Check if the username already exists in DynamoDB
+    const existingUserDynamo = await getUser(username.toLowerCase().trim());
+    if (existingUserDynamo) {
+      return util.buildResponse(401, { message: 'Username already exists in DynamoDB, please choose another username' });
     }
 
-    const saveUserResponse  = await saveUser(user);
-    if(!saveUserResponse){
-        return util.buildResponse(503, { message: 'Server Error, Please try again later.'});
+    // Check if the username already exists in MongoDB
+    const existingUserMongo = await User.findOne({ username: username.toLowerCase().trim() });
+    if (existingUserMongo) {
+      return util.buildResponse(401, { message: 'Username already exists in MongoDB, please choose another username' });
     }
-    return util.buildResponse(200, {username: username});
-   }
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password.trim(), saltRounds);
+
+    // Create new user object for DynamoDB
+    const dynamoUser = {
+      name: name,
+      email: email,
+      username: username.toLowerCase().trim(),
+      password: hashedPassword
+    };
+
+    // Save the user in DynamoDB
+    const saveUserDynamoResponse = await saveUser(dynamoUser);
+    if (!saveUserDynamoResponse) {
+      return util.buildResponse(503, { message: 'Server error saving to DynamoDB, please try again later.' });
+    }
+
+    // Create and save the new user in MongoDB
+    const mongoUser = new User({
+      name: name,
+      email: email,
+      username: username.toLowerCase().trim(),
+      password: hashedPassword
+    });
+    await mongoUser.save();
+
+    return util.buildResponse(200, { message: 'User registered successfully in both DynamoDB and MongoDB', username: username });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    return util.buildResponse(500, { message: 'Internal server error' });
+  }
+};
+
+// Get user from DynamoDB
 async function getUser(username) {
-    const params = {
-        TableName: userTable,
-        Key: {
-            username: username
-        }
-    }
+  const params = {
+    TableName: userTable,
+    Key: { username }
+  };
 
-    return await dynamodb.get(params).promise().then(response => {
-        return response.Item;
-    }, error => {
-        console.error('There is an error getting user: ', error);
-    })
+  try {
+    const response = await dynamodb.get(params).promise();
+    return response.Item;
+  } catch (error) {
+    console.error('Error getting user from DynamoDB:', error);
+  }
 }
 
+// Save user to DynamoDB
 async function saveUser(user) {
-    const params = {
-        TableName: userTable,
-        Item: user
-    }
+  const params = {
+    TableName: userTable,
+    Item: user
+  };
 
-    return await dynamodb.put(params).promise().then(() => {
-        return true;
-    }, error => {
-        console.error('There is an error saving user: ', error)
-});
+  try {
+    await dynamodb.put(params).promise();
+    return true;
+  } catch (error) {
+    console.error('Error saving user to DynamoDB:', error);
+    return false;
+  }
 }
 
-module.exports.register = register;
+module.exports = { register };
