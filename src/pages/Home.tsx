@@ -13,10 +13,10 @@ const Home: React.FC = () => {
             {/* create bar at the bottom that holds tab buttons */}
             <IonTabBar slot="bottom" color='primary'>
                 {/* tab button for home, linked to the MainHomeTab */}
-                <IonTabButton tab="tab1" href="/app/home/main">
+                {/*<IonTabButton tab="tab1" href="/app/home/main">
                     <IonIcon icon={homeOutline} />
                     <IonLabel>Home</IonLabel>
-                </IonTabButton>
+                </IonTabButton>*/}
 
                 {/* tab button for location, linked to the Location component */}
                 <IonTabButton tab="tab2" href="/app/home/location">
@@ -32,15 +32,13 @@ const Home: React.FC = () => {
             </IonTabBar>
 
             <IonRouterOutlet>
-                {/* route for the MainHomeTab component */}
-                <Route path="/app/home/main" component={MainHomeTab} />
                 {/* route for the Location component */}
                 <Route path="/app/home/location" component={Location} />
                 {/* route for the Speed component */}
                 <Route path="/app/home/speed" component={Speed} />
 
                 <Route exact path="/app/home">
-                    <Redirect to="/app/home/main" />
+                    <Redirect to="/app/home/location" />
                 </Route>
             </IonRouterOutlet>
         </IonTabs>

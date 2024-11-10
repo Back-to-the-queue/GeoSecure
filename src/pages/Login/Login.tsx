@@ -76,7 +76,7 @@ const Login: React.FC = () => {
         <IonAlert
           isOpen={error=="bad-credentials"}
           header="Invalid Credentials"
-          message="Incorrect email or password."
+          message="Please check your input and try again."
           buttons={['CLOSE']}
           onDidDismiss={() => showError('')}
         ></IonAlert>

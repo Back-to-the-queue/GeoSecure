@@ -1,37 +1,57 @@
-import { IonButton, IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, IonToolbar, useIonViewDidEnter, useIonViewDidLeave } from '@ionic/react';
-import React, { useEffect, useState } from 'react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { carSportOutline } from 'ionicons/icons';
+import React, { useState } from 'react';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 
 let trajectoryData: number[][] = [];
+// Saves tracker ID so it can be disabled when needed
 let tracker: string | number | NodeJS.Timeout | undefined;
 
 const Location: React.FC = () => {
+    // Stores location coordinates, as well as timestamp of recording
     const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
+    // Holds error strings for display when errors occur
     const [locationError, setLocationError] = useState<string | null>(null);
+    // For toggling tracking status
     const [isTracking, setTracking] = useState(false);
-
-    // Function to toggle tracking location
+    
+    /**
+     * Activates when the user presses the tracking button.
+     * Toggles tracking to be on or off.
+     */
     const toggleTracking = () => {
         checkPermissions();
         // Begin tracking if permissions granted and not tracking
         if (locationError == null && !isTracking)
         {
+            // Immediately get starting location
+            updateUserLocation();
+
+            // Set automatic tracking
             tracker = setInterval(updateUserLocation, 5000);
+
             setTracking(true);
             console.log("Began tracking location. Tracking ID=" + tracker);
-            document.getElementById('track-status')!.textContent = "Stop Tracking";
+            document.getElementById('track-toggle')!.textContent = "Stop Tracking";
+            document.getElementById('track-status')!.textContent = "Location tracking enabled.";
+            document.getElementById('location-display')!.style.display = "initial";
         }
         else { // Stop tracking if already tracking, or permissions not granted
             clearInterval(tracker);
             setTracking(false);
             trajectoryData = []; // Clear stored data
             console.log("Stopped tracking location. Tracking ID=" + tracker);
-            document.getElementById('track-status')!.textContent = "Start Tracking";
+            document.getElementById('track-toggle')!.textContent = "Start Tracking";
+            document.getElementById('track-status')!.textContent = "Location tracking disabled.";
+            document.getElementById('location-display')!.style.display = "none";
         }
     }
 
-    // Function to update the user's location
+    /**
+     * Updates user location with current coordinates and timestamp.
+     * Prints an error if location permissions are denied.
+     */
     const updateUserLocation = async () => {
         try {
             const position = await Geolocation.getCurrentPosition();
@@ -48,7 +68,12 @@ const Location: React.FC = () => {
         }
     };
 
-    // Records user latitude, longitude, and timestamp of recording
+    /**
+     * Takes positional data and stores it as an entry for a trajectory.
+     * Creates a trajectory after a fixed number of entires are stored
+     * and calls the encryption algorithm.
+     * @param position The current position of the user
+     */
     const recordUserLocation = (position: Position) => {
         const entry = [position.coords.latitude,
             position.coords.longitude,
@@ -61,7 +86,11 @@ const Location: React.FC = () => {
         }
     }
 
-    // Encrypts the trajectory
+    /**
+     * Encrypts a trajectory by multiplying it and calculating the
+     * differences between data points.
+     * @param trajectoryData The trajectory to be encrypted
+     */
     const encryptTrajectory = (trajectoryData:number[][]) => {
         // Multiply the data points to remove the decimal places
         trajectoryData.forEach((entry, i) => {
@@ -136,11 +165,6 @@ const Location: React.FC = () => {
         }
     };
 
-    // Check permissions when the component mounts
-    useIonViewDidEnter(() => {
-        checkPermissions();
-    }, []);
-
     return (
         <IonPage>
             <IonHeader>
@@ -148,27 +172,33 @@ const Location: React.FC = () => {
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
-                    <IonTitle>Location</IonTitle>
+                    <IonTitle>Home</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding" fullscreen>
                 <div style={{ textAlign: 'center'}}>
-                {locationError ? (
+                    {/* all content on main page */}
+                    {/* icon of a sports car to use as a sort of logo */}
+                    <IonIcon icon={carSportOutline} color= "primary" style={{ fontSize: '200px' }} />
+
+                    <IonButton id='track-toggle' expand="full" onClick={toggleTracking} className="ion-margin-top">
+                        Start Tracking
+                    </IonButton>
+                    
+                    <h2 id='track-status'></h2>
+                    {locationError ? (
                         <h1>{locationError}</h1>
                     ) : location ? (
-                        <>
+                        <div id='location-display'>
                             {/* Display location */}
                             <h2>Your Location:</h2>
                             <p>Latitude: {location.latitude}</p>
                             <p>Longitude: {location.longitude}</p>
-                        </>
+                        </div>
                     ) : (
                         <h1>Track Your Location!</h1>
                     )}
                 </div>
-                <IonButton id='track-status' expand="full" onClick={toggleTracking} className="ion-margin-top">
-                    Start Tracking
-                </IonButton>
             </IonContent>
         </IonPage>
     );

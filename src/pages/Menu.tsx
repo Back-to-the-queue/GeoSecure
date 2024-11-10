@@ -10,7 +10,7 @@ const Menu: React.FC = () => {
     //define paths for menu items and have in an array
     const paths = [
         {name: 'Home', url: '/app/home', icon: homeOutline},
-        {name: 'Setting', url: '/app/settings', icon: settingsOutline},
+        {name: 'Settings', url: '/app/settings', icon: settingsOutline},
         {name: 'About', url: '/app/about', icon: informationCircleOutline},
     ]
 
