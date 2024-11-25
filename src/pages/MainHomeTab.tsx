@@ -20,7 +20,7 @@ const MainHomeTab: React.FC = () => {
                     {/* icon of a sports car to use as a sort of logo */}
                     <IonIcon icon={carSportOutline} color= "primary" style={{ fontSize: '200px' }} />
                     {/* button currently doesn't do anything, but will eventually be used to track the users trip */}
-                    <IonButton id='track-status' expand="full" className="ion-margin-top">
+                    <IonButton expand="full" className="ion-margin-top">
                         Track Trip
                     </IonButton>
                 </div>
