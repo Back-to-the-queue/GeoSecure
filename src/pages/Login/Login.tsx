@@ -6,6 +6,8 @@ import {
 import { useHistory } from 'react-router-dom';
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { logInOutline, personCircleOutline } from 'ionicons/icons';
+import { Preferences } from '@capacitor/preferences';
+
 
 const Login: React.FC = () => {
   const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
@@ -26,6 +28,7 @@ const Login: React.FC = () => {
       const response: AxiosResponse = await axios.post(`${API_BASE_URL}/login`, { username, password });
       const { token } = response.data;
       localStorage.setItem('authToken', token);
+      Preferences.set({key: "userId", value: username});
       setLoading(false);
       history.push('/app');
     } catch (error: AxiosError | unknown) {

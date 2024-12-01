@@ -3,12 +3,15 @@ import { carSportOutline } from 'ionicons/icons';
 import React, { useState } from 'react';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
+import axios, { AxiosResponse, AxiosError } from 'axios';
 
 let trajectoryData: number[][] = [];
 // Saves tracker ID so it can be disabled when needed
 let tracker: string | number | NodeJS.Timeout | undefined;
 
 const Location: React.FC = () => {
+    const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
     // Stores location coordinates, as well as timestamp of recording
     const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
     // Holds error strings for display when errors occur
@@ -123,12 +126,17 @@ const Location: React.FC = () => {
         console.log("Encrypted Trajectory: " + encryptedTrajectory);
         
         // Upload trajectory
-        uploadTrajectory(key, encryptedTrajectory);
+        uploadTrajectory(key, trajectoryData[0][2], encryptedTrajectory);
     }
 
     // Uploads the trajectory to the database
-    const uploadTrajectory = (key: number[], encryptedTrajectory: number[][]) => {
-        // TODO: Upload trajectory data to database
+    const uploadTrajectory = async(key: number[], tripId: number, locationData: number[][]) => {
+
+        const {value} = await Preferences.get({key: "userId"});
+        const userId = value;
+        console.log(userId);
+
+        axios.post(`${API_BASE_URL}/startTracking`, { userId, tripId, locationData});
 
         // Clear trajectory after it is uploaded
         trajectoryData = [];
