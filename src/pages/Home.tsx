@@ -3,8 +3,7 @@ import { homeOutline, locationOutline, speedometerOutline } from 'ionicons/icons
 import React from 'react';
 import { Route, Redirect } from 'react-router';
 import MainHomeTab from './MainHomeTab';
-import Location from './Location';
-import Speed from './Speed';
+import Track from './Track';
 
 const Home: React.FC = () => {
 
@@ -18,27 +17,19 @@ const Home: React.FC = () => {
                     <IonLabel>Home</IonLabel>
                 </IonTabButton>*/}
 
-                {/* tab button for location, linked to the Location component */}
-                <IonTabButton tab="tab2" href="/app/home/location">
+                {/* tab button for track trip, linked to the Track component */}
+                <IonTabButton tab="tab2" href="/app/home/track">
                     <IonIcon icon={locationOutline} />
-                    <IonLabel>Location</IonLabel>
-                </IonTabButton>
-
-                {/* tab button for speed, linked to the Speed component */}
-                <IonTabButton tab="tab3" href="/app/home/speed">
-                    <IonIcon icon={speedometerOutline} />
-                    <IonLabel>Speed</IonLabel>
+                    <IonLabel>Track Trip</IonLabel>
                 </IonTabButton>
             </IonTabBar>
 
             <IonRouterOutlet>
-                {/* route for the Location component */}
-                <Route path="/app/home/location" component={Location} />
-                {/* route for the Speed component */}
-                <Route path="/app/home/speed" component={Speed} />
+                {/* route for the Track component */}
+                <Route path="/app/home/track" component={Track} />
 
                 <Route exact path="/app/home">
-                    <Redirect to="/app/home/location" />
+                    <Redirect to="/app/home/track" />
                 </Route>
             </IonRouterOutlet>
         </IonTabs>

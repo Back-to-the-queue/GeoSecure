@@ -65,7 +65,7 @@ const Signup: React.FC = () => {
       <IonContent scrollY={false} className="ion-padding">
         <IonList>
           <IonItem>
-            <IonLabel position="floating">Email</IonLabel>
+            <IonLabel position="stacked">Email</IonLabel>
             <IonInput
               type="email"
               value={email}
@@ -74,7 +74,7 @@ const Signup: React.FC = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="floating">Username</IonLabel>
+            <IonLabel position="stacked">Username</IonLabel>
             <IonInput
               type="text"
               value={username}
@@ -83,7 +83,7 @@ const Signup: React.FC = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="floating">Password</IonLabel>
+            <IonLabel position="stacked">Password</IonLabel>
             <IonInput
               type="password"
               value={password}
@@ -92,7 +92,7 @@ const Signup: React.FC = () => {
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="floating">Re-enter Password</IonLabel>
+            <IonLabel position="stacked">Re-enter Password</IonLabel>
             <IonInput
               type="password"
               value={confirmPassword}

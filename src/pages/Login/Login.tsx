@@ -47,7 +47,7 @@ const Login: React.FC = () => {
       </IonHeader>
       <IonContent scrollY={false} className="ion-padding">
         <IonItem>
-          <IonLabel position="floating">Username</IonLabel>
+          <IonLabel position="stacked">Username</IonLabel>
           <IonInput
             type="text"
             value={username}
@@ -56,7 +56,7 @@ const Login: React.FC = () => {
           />
         </IonItem>
         <IonItem>
-          <IonLabel position="floating">Password</IonLabel>
+          <IonLabel position="stacked">Password</IonLabel>
           <IonInput
             type="password"
             value={password}
