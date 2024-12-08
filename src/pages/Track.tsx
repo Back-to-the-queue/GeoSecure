@@ -1,6 +1,6 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonMenuButton, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { carSportOutline } from 'ionicons/icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
@@ -23,6 +23,18 @@ const Track: React.FC = () => {
 
     // Variable to hold previous position to use for speed calculation
     let previousLocation: {latitude: number; longitude: number; timestamp: number} | null = null;
+
+    // Variables for speed reporting
+    const [maxSpeed, setMaxSpeed] = useState<number>(0);
+    const [totalSpeed, setTotalSpeed] = useState<number>(0);
+    const [speedCount, setSpeedCount] = useState<number>(0);
+    const [averageSpeed, setAverageSpeed] = useState<number>(0);
+
+    useEffect(() => {
+        if (speedCount > 0) {
+          setAverageSpeed(totalSpeed / speedCount);
+        }
+      }, [totalSpeed, speedCount]);
     
     /**
      * Activates when the user presses the tracking button.
@@ -48,8 +60,22 @@ const Track: React.FC = () => {
         else { // Stop tracking if already tracking, or permissions not granted
             clearInterval(tracker);
             setTracking(false);
+
+            // Generate and display the report
+            const report = {
+                maxSpeed,
+                averageSpeed: parseFloat(averageSpeed.toFixed(2)),
+            };
+            console.log('Generated Report:', report);
+
+            alert(`Driving Habit Report:\nMax Speed: ${report.maxSpeed} m/s\nAverage Speed: ${report.averageSpeed} m/s`);
+
             trajectoryData = []; // Clear stored data
             setSpeed(null);
+            setMaxSpeed(0);
+            setTotalSpeed(0);
+            setSpeedCount(0);
+            setAverageSpeed(0);
             console.log("Stopped tracking location. Tracking ID=" + tracker);
             document.getElementById('track-toggle')!.textContent = "Start Tracking";
             document.getElementById('track-status')!.textContent = "Location tracking disabled.";
@@ -80,6 +106,11 @@ const Track: React.FC = () => {
                 const timeElapsed = (currentLocation.timestamp - previousLocation.timestamp) / 1000; // in seconds
                 const calculatedSpeed = timeElapsed > 0 ? distance / timeElapsed : 0;
                 setSpeed(calculatedSpeed);
+
+                // Update max speed and total speed for average calculation
+                setMaxSpeed((prevMax) => Math.max(prevMax, calculatedSpeed));
+                setTotalSpeed((prevTotal) => prevTotal + calculatedSpeed);
+                setSpeedCount((prevCount) => prevCount + 1);
             }
 
             previousLocation = currentLocation;
@@ -189,13 +220,10 @@ const Track: React.FC = () => {
             // For web, use the browser's Geolocation API
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setLocationError(null);
-                    },
-                    (error) => {
-                        setLocationError('Location access denied.'); // Handle error
-                    }
-                );
+                    () => setLocationError(null),
+                    () => setLocationError('Location access denied.') // Handle error
+                  );
+          
             } else {
                 setLocationError('Geolocation is not supported by this browser.');
             }
