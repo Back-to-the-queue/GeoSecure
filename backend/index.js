@@ -4,6 +4,7 @@ const loginService = require('./models/Login');
 const registerService = require('./models/Register');
 const verifyService = require('./models/Verify');
 const Tracking = require('./models/Tracking'); 
+const adminSearchService = require('./models/AdminSearch');
 const util = require('./routes/util');
 
 const healthPath = '/health';
@@ -43,7 +44,7 @@ exports.handler = async (event) => {
             break;
         case event.httpMethod === 'POST' && event.path === userSearchPath:
             const searchBody = JSON.parse(event.body);
-            response = await registerService.searchUsers(searchBody);
+            response = await adminSearchService.searchUsers(searchBody);
             break;
         default:
             response = util.buildResponse(404, 'Not Found');

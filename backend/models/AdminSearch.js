@@ -1,13 +1,12 @@
 const AWS = require('aws-sdk');
 const util = require('../routes/util');
-const User = require('./User'); // MongoDB User model
 
 AWS.config.update({ region: 'us-east-1' });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'geo-users';
 
 /**
- * Search for users by a partial username or email in both DynamoDB and MongoDB.
+ * Search for users by a partial username or email in DynamoDB.
  */
 const searchUsers = async (searchBody) => {
   const { query } = searchBody;
@@ -17,16 +16,9 @@ const searchUsers = async (searchBody) => {
   }
 
   try {
-    // Search DynamoDB
+    // Search DynamoDB 
     const dynamoUsers = await searchDynamoDB(query);
-
-    // Search MongoDB
-    const mongoUsers = await searchMongoDB(query);
-
-    // Combine and remove duplicates based on `username`
-    const allUsers = mergeResults(dynamoUsers, mongoUsers);
-
-    return util.buildResponse(200, { users: allUsers });
+    return util.buildResponse(200, { users: dynamoUsers });
   } catch (error) {
     console.error('Error searching users:', error);
     return util.buildResponse(500, { message: 'Internal server error' });
@@ -54,39 +46,6 @@ const searchDynamoDB = async (query) => {
     console.error('Error searching DynamoDB:', error);
     return [];
   }
-};
-
-// Search MongoDB for users
-const searchMongoDB = async (query) => {
-  try {
-    return await User.find({
-      $or: [
-        { username: { $regex: query, $options: 'i' } },
-        { email: { $regex: query, $options: 'i' } },
-      ],
-    }).lean(); // Use lean() for faster performance when only reading data
-  } catch (error) {
-    console.error('Error searching MongoDB:', error);
-    return [];
-  }
-};
-
-// Merge DynamoDB and MongoDB results, removing duplicates
-const mergeResults = (dynamoUsers, mongoUsers) => {
-  const userMap = new Map();
-
-  // Add DynamoDB users
-  dynamoUsers.forEach((user) => {
-    userMap.set(user.username, user);
-  });
-
-  // Add MongoDB users (overwriting duplicates if they exist)
-  mongoUsers.forEach((user) => {
-    userMap.set(user.username, user);
-  });
-
-  // Return unique users as an array
-  return Array.from(userMap.values());
 };
 
 module.exports = { searchUsers };

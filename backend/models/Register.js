@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const bcrypt = require('bcryptjs');
 const util = require('../routes/util');
-const User = require('./User');
 const saltRounds = 10;
 
 AWS.config.update({
@@ -25,15 +24,9 @@ const register = async (registerBody) => {
 
   try {
     // Check if the username already exists in DynamoDB
-    const existingUserDynamo = await getUser(username.toLowerCase().trim());
-    if (existingUserDynamo) {
-      return util.buildResponse(401, { message: 'Username already exists in DynamoDB, please choose another username' });
-    }
-
-    // Check if the username already exists in MongoDB
-    const existingUserMongo = await User.findOne({ username: username.toLowerCase().trim() });
-    if (existingUserMongo) {
-      return util.buildResponse(401, { message: 'Username already exists in MongoDB, please choose another username' });
+    const existingUser = await getUser(username.toLowerCase().trim());
+    if (existingUser) {
+      return util.buildResponse(401, { message: 'Username already exists, please choose another username' });
     }
 
     // Hash the password
@@ -45,24 +38,16 @@ const register = async (registerBody) => {
       email: email,
       username: username.toLowerCase().trim(),
       password: hashedPassword,
-      role: role.toLowerCase()
+      role: role.toLowerCase(),
     };
-    const saveUserDynamoResponse = await saveUser(dynamoUser);
-    if (!saveUserDynamoResponse) {
-      return util.buildResponse(503, { message: 'Server error saving to DynamoDB, please try again later.' });
+
+    // Save user to DynamoDB
+    const saveUserResponse = await saveUser(dynamoUser);
+    if (!saveUserResponse) {
+      return util.buildResponse(503, { message: 'Server error saving user, please try again later.' });
     }
 
-    // Create and save the new user in MongoDB
-    const mongoUser = new User({
-      name: name,
-      email: email,
-      username: username.toLowerCase().trim(),
-      password: hashedPassword,
-      role: role.toLowerCase
-    });
-    await mongoUser.save();
-
-    return util.buildResponse(200, { message: 'User registered successfully in both DynamoDB and MongoDB', username: username });
+    return util.buildResponse(200, { message: 'User registered successfully', username: username });
   } catch (error) {
     console.error('Error registering user:', error);
     return util.buildResponse(500, { message: 'Internal server error' });
@@ -81,6 +66,7 @@ async function getUser(username) {
     return response.Item;
   } catch (error) {
     console.error('Error getting user from DynamoDB:', error);
+    return null;
   }
 }
 
