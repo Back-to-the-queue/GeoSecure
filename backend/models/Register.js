@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const util = require('../routes/util');
 const User = require('./User');
 const saltRounds = 10;
