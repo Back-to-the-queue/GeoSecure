@@ -16,7 +16,7 @@ const AdminDashboard: React.FC = () => {
     setResults([]);
 
     try {
-      const response = await axios.post('https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod/searchUsers', { query });
+      const response = await axios.post('https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod/searchUsers', { query });
       setResults(response.data.users.filter((user: any) => user.role === 'driver')); // Filter drivers
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch users. Please try again.');
