@@ -11,6 +11,7 @@ const verifyPath = '/verify';
 const loginPath = '/login';
 const registerPath = '/register';
 const startTrackingPath = '/startTracking';
+const userSearchPath = '/searchUsers';
 
 exports.handler = async (event) => {
     console.log('Request Event:', event);
@@ -33,7 +34,16 @@ exports.handler = async (event) => {
             response = await verifyService.verify(verifyBody);
             break;
         case event.httpMethod === 'POST' && event.path === startTrackingPath:
-            response = await startTracking(event);  
+            const user = verifyRole(event, ['driver']);
+            if (!user) {
+              response = util.buildResponse(403, { message: 'Access denied' });
+            } else {
+              response = await Tracking.startTracking(user.username);
+            }
+            break;
+        case event.httpMethod === 'POST' && event.path === userSearchPath:
+            const searchBody = JSON.parse(event.body);
+            response = await registerService.searchUsers(searchBody);
             break;
         default:
             response = util.buildResponse(404, 'Not Found');
@@ -44,14 +54,17 @@ exports.handler = async (event) => {
 //Handles the startTracking request, including storing trajectory data
 const startTracking = async (event) => {
     const { userId, tripId, key, encryptedTrajectory } = JSON.parse(event.body);
+
+    if (!userId || (key && !tripId)) {
+        return util.buildResponse(400, { message: 'Invalid request data' });
+    }
+
     try {
-        //Initialize tracking if no trajectory data is sent
         if (!key || !encryptedTrajectory) {
             const newTripId = await Tracking.startTracking(userId);
             return util.buildResponse(200, { tripId: newTripId });
         }
 
-        //Store trajectory data in Dynamo
         await Tracking.storeTrajectory(tripId, key, encryptedTrajectory);
         return util.buildResponse(200, { message: 'Trajectory data stored successfully' });
     } catch (error) {

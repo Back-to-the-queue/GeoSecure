@@ -1,12 +1,9 @@
-// Register.js
-
 const AWS = require('aws-sdk');
 const bcrypt = require('bcrypt');
 const util = require('../routes/util');
 const User = require('./User');
 const saltRounds = 10;
 
-// Set AWS DynamoDB region
 AWS.config.update({
   region: 'us-east-1'
 });
@@ -15,10 +12,15 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const userTable = 'geo-users';
 
 const register = async (registerBody) => {
-  const { name, email, username, password } = registerBody;
+  const { name, email, username, password, role } = registerBody;
 
-  if (!username || !name || !email || !password) {
+  if (!username || !name || !email || !password || !role) {
     return util.buildResponse(401, { message: 'All fields are required' });
+  }
+
+  const validRoles = ['driver', 'admin'];
+  if (!validRoles.includes(role.toLowerCase())) {
+    return util.buildResponse(400, { message: 'Invalid role provided' });
   }
 
   try {
@@ -42,10 +44,9 @@ const register = async (registerBody) => {
       name: name,
       email: email,
       username: username.toLowerCase().trim(),
-      password: hashedPassword
+      password: hashedPassword,
+      role: role.toLowerCase()
     };
-
-    // Save the user in DynamoDB
     const saveUserDynamoResponse = await saveUser(dynamoUser);
     if (!saveUserDynamoResponse) {
       return util.buildResponse(503, { message: 'Server error saving to DynamoDB, please try again later.' });
@@ -56,7 +57,8 @@ const register = async (registerBody) => {
       name: name,
       email: email,
       username: username.toLowerCase().trim(),
-      password: hashedPassword
+      password: hashedPassword,
+      role: role.toLowerCase
     });
     await mongoUser.save();
 

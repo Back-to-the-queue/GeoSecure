@@ -1,37 +1,18 @@
-const jwt  = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
-function generateToken(userInfo){
-  if(!userInfo){
-    return null;
+const generateToken = (userInfo) => {
+  return jwt.sign(userInfo, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
+
+const verifyToken = (username, token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.username === username
+      ? { verified: true }
+      : { verified: false, message: 'Username mismatch' };
+  } catch (error) {
+    return { verified: false, message: 'Invalid token' };
   }
+};
 
-  return jwt.sign(userInfo, process.env.JWT_SECRET, {
-    expiresIn: '1h'
-  })
-}
-
-function verifyToken(username, token){
-  return jwt.verify(token, process.env.JWT_SECRET, (error, response) => {
-    if(error){
-      return{
-        verified: false,
-        message: 'invalid token'
-      }
-    }
-
-    if (response.username !== username) {
-      return {
-          verified: false,
-          message: 'username does not match'
-      };
-  }
-
-    return{
-      verified: true,
-      message: 'verified'
-    }
-  })
-}
-
-module.exports.generateToken = generateToken;
-module.exports.verifyToken = verifyToken;
+module.exports = { generateToken, verifyToken };

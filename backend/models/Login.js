@@ -1,5 +1,3 @@
-// Login.js
-
 const AWS = require('aws-sdk');
 const bcrypt = require('bcrypt');
 const util = require('../routes/util');
@@ -31,7 +29,9 @@ const login = async (loginBody) => {
       if (!isPasswordMatch) {
         return util.buildResponse(403, { message: 'Invalid username or password' });
       }
-      userInfo = { username: dynamoUser.username, name: dynamoUser.name };
+      userInfo = { username: dynamoUser.username, 
+        role: dynamoUser.role || 'driver'
+       };
     } else {
       // If not found in DynamoDB, check MongoDB
       const mongoUser = await User.findOne({ username: username.toLowerCase().trim() });
@@ -44,13 +44,18 @@ const login = async (loginBody) => {
       if (!isPasswordMatch) {
         return util.buildResponse(403, { message: 'Invalid username or password' });
       }
-      userInfo = { username: mongoUser.username, name: mongoUser.name };
+      userInfo = { username: mongoUser.username, 
+        role: mongoUser.role || 'driver'
+      };
     }
 
     // Generate token for authenticated user
     const token = auth.generateToken(userInfo);
 
-    return util.buildResponse(200, { user: userInfo, token: token });
+    return util.buildResponse(200, { 
+      user: { username: userInfo.username, role: userInfo.role},
+      token: token 
+    });
   } catch (error) {
     console.error('Error logging in:', error);
     return util.buildResponse(500, { message: 'Internal server error' });
