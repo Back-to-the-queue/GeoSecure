@@ -11,7 +11,7 @@ import axios, { AxiosResponse } from 'axios';
 import { checkmarkDoneOutline } from 'ionicons/icons';
 
 const Signup: React.FC = () => {
-  const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
+  const API_BASE_URL = 'https://eo16nb655e.execute-api.us-east-1.amazonaws.com/production';
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -104,12 +104,13 @@ const Signup: React.FC = () => {
           <IonItem>
             <IonLabel position="stacked">Role</IonLabel>
             <IonSelect
-              value={role}
-              placeholder="Select Role"
-              onIonChange={(e) => setRole(e.detail.value)}
-            >
-              <IonSelectOption value="driver">Driver</IonSelectOption>
-            </IonSelect>
+            value={role}
+            placeholder="Select Role"
+            onIonChange={(e) => setRole(e.detail.value)}
+             >
+            <IonSelectOption value="driver">Driver</IonSelectOption>
+            <IonSelectOption value="admin">Administrator</IonSelectOption>
+          </IonSelect>
           </IonItem>
           <IonButton expand="full" onClick={handleSignup} disabled={loading} className="ion-margin-top">
             Sign Up

@@ -1,16 +1,26 @@
 import React, { useState } from 'react';
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel,
-  IonButton, IonLoading, IonIcon, IonAlert, useIonViewWillEnter
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonButton,
+  IonLoading,
+  IonIcon,
+  IonAlert,
+  useIonViewWillEnter,
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
 import { logInOutline, personCircleOutline } from 'ionicons/icons';
 import { Preferences } from '@capacitor/preferences';
-const jwtDecode: any = require('jwt-decode');
 
 const Login: React.FC = () => {
-  const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
+  const API_BASE_URL = 'https://eo16nb655e.execute-api.us-east-1.amazonaws.com/production';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,23 +35,47 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response: AxiosResponse = await axios.post(`${API_BASE_URL}/login`, { username, password });
+      const response = await axios.post(`${API_BASE_URL}/login`, { username, password });
       const { token } = response.data;
-      const decodedToken = jwtDecode(token) as { role: string };
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('userRole', decodedToken.role); // Save role locally
 
-    // Redirect based on role
-    if (decodedToken.role === 'admin') {
-      history.push('/admin-dashboard');
-    } else {
-      history.push('/app');
+      // Save the token to localStorage
+      localStorage.setItem('authToken', token);
+
+      // Decode the token manually
+      const decodedToken = decodeJWT(token);
+      const userRole = decodedToken.role;
+
+      // Store user role locally if needed
+      localStorage.setItem('userRole', userRole);
+
+      // Redirect based on role
+      if (userRole === 'admin') {
+        history.push('/admin-dashboard');
+      } else {
+        history.push('/app');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      showError('bad-credentials');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Login failed:', error);
-    setLoading(false);
-  }
-};
+  };
+
+  // Helper function to decode JWT manually
+  const decodeJWT = (token: string) => {
+    try {
+      const [, payload] = token.split('.'); // Extract the payload (middle part of JWT)
+      if (!payload) throw new Error('Invalid token format');
+
+      // Decode Base64 payload
+      const decodedPayload = atob(payload);
+      return JSON.parse(decodedPayload); // Parse JSON string into object
+    } catch (error) {
+      console.error('Failed to decode JWT:', error);
+      throw error;
+    }
+  };
 
   return (
     <IonPage>
@@ -69,7 +103,12 @@ const Login: React.FC = () => {
             required
           />
         </IonItem>
-        <IonButton expand="full" onClick={handleLogin} disabled={loading} className="ion-margin-top">
+        <IonButton
+          expand="full"
+          onClick={handleLogin}
+          disabled={loading}
+          className="ion-margin-top"
+        >
           Login
           <IonIcon icon={logInOutline} slot="end" />
         </IonButton>
@@ -80,7 +119,7 @@ const Login: React.FC = () => {
         </IonButton>
 
         <IonAlert
-          isOpen={error === "bad-credentials"}
+          isOpen={error === 'bad-credentials'}
           header="Invalid Credentials"
           message="Please check your input and try again."
           buttons={['CLOSE']}

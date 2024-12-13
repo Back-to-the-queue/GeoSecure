@@ -17,7 +17,6 @@ const userSearchPath = '/searchUsers';
 exports.handler = async (event) => {
     console.log('Request Event:', event);
     let response;
-
     switch (true) {
         case event.httpMethod === 'GET' && event.path === healthPath:
             response = util.buildResponse(200, { status: 'healthy' });
