@@ -1,7 +1,10 @@
+// Login.js
+
 const AWS = require('aws-sdk');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const util = require('../routes/util');
 const auth = require('../routes/auth');
+const User = require('./User');
 
 AWS.config.update({
   region: 'us-east-1'
@@ -18,31 +21,36 @@ const login = async (loginBody) => {
   }
 
   try {
-    // Retrieve the user from DynamoDB
+    // First, attempt to retrieve the user from DynamoDB
     const dynamoUser = await getUserFromDynamoDB(username.toLowerCase().trim());
-    if (!dynamoUser || !dynamoUser.username) {
-      return util.buildResponse(403, { message: 'Invalid username or password' });
+    let userInfo;
+
+    if (dynamoUser && dynamoUser.username) {
+      // User found in DynamoDB
+      const isPasswordMatch = await bcrypt.compare(password, dynamoUser.password);
+      if (!isPasswordMatch) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+      userInfo = { username: dynamoUser.username, name: dynamoUser.name };
+    } else {
+      // If not found in DynamoDB, check MongoDB
+      const mongoUser = await User.findOne({ username: username.toLowerCase().trim() });
+      if (!mongoUser) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+
+      // Check if the password matches in MongoDB
+      const isPasswordMatch = await bcrypt.compare(password, mongoUser.password);
+      if (!isPasswordMatch) {
+        return util.buildResponse(403, { message: 'Invalid username or password' });
+      }
+      userInfo = { username: mongoUser.username, name: mongoUser.name };
     }
 
-    // Validate password
-    const isPasswordMatch = await bcrypt.compare(password, dynamoUser.password);
-    if (!isPasswordMatch) {
-      return util.buildResponse(403, { message: 'Invalid username or password' });
-    }
-
-    // Prepare user info
-    const userInfo = {
-      username: dynamoUser.username,
-      role: dynamoUser.role || 'driver',
-    };
-
-    // Generate token
+    // Generate token for authenticated user
     const token = auth.generateToken(userInfo);
 
-    return util.buildResponse(200, {
-      user: { username: userInfo.username, role: userInfo.role },
-      token: token
-    });
+    return util.buildResponse(200, { user: userInfo, token: token });
   } catch (error) {
     console.error('Error logging in:', error);
     return util.buildResponse(500, { message: 'Internal server error' });

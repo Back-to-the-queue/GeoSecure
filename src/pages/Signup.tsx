@@ -2,21 +2,18 @@ import React, { useState } from 'react';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonInput, IonItem, IonLabel,
   IonButton, IonLoading, IonIcon, IonBackButton, IonButtons, IonAlert, IonList,
-  useIonViewWillEnter,
-  IonSelect,
-  IonSelectOption
+  useIonViewWillEnter
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import { checkmarkDoneOutline } from 'ionicons/icons';
 
 const Signup: React.FC = () => {
-  const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
+  const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<string>('driver'); // Default to 'driver'
   const [loading, setLoading] = useState(false);
   const [error, showError] = useState('');
   const history = useHistory();
@@ -34,12 +31,14 @@ const Signup: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/register`, {
-        email, username, password, role
+      const response: AxiosResponse = await axios.post(`${API_BASE_URL}/register`, {
+        email, username, password
       });
+      console.log(response.data);
+      setLoading(false);
       history.push('/login');
-    } catch (error) {
-      console.error('Signup failed:', error);
+    } catch (error: unknown) {
+      console.error('Error during signup:', error);
       setLoading(false);
       
       // Type guard for AxiosError
@@ -100,16 +99,6 @@ const Signup: React.FC = () => {
               onIonInput={(e) => setConfirmPassword(e.detail.value!)}
               required
             />
-          </IonItem>
-          <IonItem>
-            <IonLabel position="stacked">Role</IonLabel>
-            <IonSelect
-              value={role}
-              placeholder="Select Role"
-              onIonChange={(e) => setRole(e.detail.value)}
-            >
-              <IonSelectOption value="driver">Driver</IonSelectOption>
-            </IonSelect>
           </IonItem>
           <IonButton expand="full" onClick={handleSignup} disabled={loading} className="ion-margin-top">
             Sign Up

@@ -7,10 +7,10 @@ import { useHistory } from 'react-router-dom';
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { logInOutline, personCircleOutline } from 'ionicons/icons';
 import { Preferences } from '@capacitor/preferences';
-const jwtDecode: any = require('jwt-decode');
+
 
 const Login: React.FC = () => {
-  const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
+  const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,21 +27,16 @@ const Login: React.FC = () => {
     try {
       const response: AxiosResponse = await axios.post(`${API_BASE_URL}/login`, { username, password });
       const { token } = response.data;
-      const decodedToken = jwtDecode(token) as { role: string };
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('userRole', decodedToken.role); // Save role locally
-
-    // Redirect based on role
-    if (decodedToken.role === 'admin') {
-      history.push('/admin-dashboard');
-    } else {
+      localStorage.setItem('authToken', token);
+      Preferences.set({key: "userId", value: username});
+      setLoading(false);
       history.push('/app');
+    } catch (error: AxiosError | unknown) {
+      console.error('Login failed:', error);
+      setLoading(false);
+      showError("bad-credentials");
     }
-  } catch (error) {
-    console.error('Login failed:', error);
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <IonPage>

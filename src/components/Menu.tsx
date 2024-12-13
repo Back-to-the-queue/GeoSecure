@@ -1,42 +1,18 @@
 import { IonButton, IonContent, IonHeader, IonIcon, IonItem, IonMenu, IonMenuToggle, IonPage, IonRouterOutlet, IonSplitPane, IonTitle, IonToolbar } from '@ionic/react';
 import { homeOutline, informationCircleOutline, logOutOutline, settingsOutline } from 'ionicons/icons';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Route, Redirect } from 'react-router';
 import Settings from './Settings';
 import Home from '../pages/Home';
 import About from '../pages/About';
-import { Preferences } from '@capacitor/preferences';
 
 const Menu: React.FC = () => {
-    const [role, setRole] = useState<string | null>(null);
-  
-    // Fetch the user's role from local storage or preferences
-    useEffect(() => {
-      const fetchRole = async () => {
-        const { value } = await Preferences.get({ key: 'userRole' });
-        setRole(value); // Set the role to "admin" or "driver"
-      };
-      fetchRole();
-    }, []);
-  
-    // Menu paths dynamically determined by role
-    const adminPaths = [
-      { name: 'Dashboard', url: '/admin-dashboard', icon: homeOutline },
-      { name: 'Settings', url: '/app/settings', icon: settingsOutline },
-    ];
-  
-    const driverPaths = [
-      { name: 'Home', url: '/app/home', icon: homeOutline },
-      { name: 'Settings', url: '/app/settings', icon: settingsOutline },
-    ];
-  
-    const paths = role === 'admin' ? adminPaths : driverPaths;
-  
-    const handleLogout = async () => {
-      await Preferences.clear(); // Clear user session data
-      window.location.href = '/'; // Redirect to login
-    };
-  
+    //define paths for menu items and have in an array
+    const paths = [
+        {name: 'Home', url: '/app/home', icon: homeOutline},
+        {name: 'Settings', url: '/app/settings', icon: settingsOutline},
+        {name: 'About', url: '/app/about', icon: informationCircleOutline},
+    ]
 
     return (
         <IonPage>
@@ -74,16 +50,16 @@ const Menu: React.FC = () => {
 
             {/* create the routes to the pages on our menu */}
             <IonRouterOutlet id="main">
-          <Route exact path="/app/home" component={Home} />
-          <Route path="/app/settings" component={Settings} />
-          <Route path="/app/about" component={About} />
-          <Route exact path="/app">
-            <Redirect to="/app/home" />
-          </Route>
-        </IonRouterOutlet>
-      </IonSplitPane>
-    </IonPage>
-  );
+                <Route exact path="/app/home" component={Home} />
+                <Route path = "/app/settings" component={Settings} />
+                <Route path = "/app/about" component={About} />
+                <Route exact path="/app">
+                    <Redirect to="/app/home" />
+                </Route>
+            </IonRouterOutlet>
+            </IonSplitPane>
+        </IonPage>
+    );
 };
 
 export default Menu;

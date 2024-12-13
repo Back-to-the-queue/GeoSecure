@@ -11,7 +11,7 @@ let trajectoryData: number[][] = [];
 let tracker: string | number | NodeJS.Timeout | undefined;
 
 const Track: React.FC = () => {
-    const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
+    const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
     // Stores location coordinates, as well as timestamp of recording
     const [location, setLocation] = useState<{latitude: number; longitude: number; timestamp: number} | null>(null);
     // Holds error strings for display when errors occur
