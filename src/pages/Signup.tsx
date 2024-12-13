@@ -9,7 +9,7 @@ import axios, { AxiosResponse } from 'axios';
 import { checkmarkDoneOutline } from 'ionicons/icons';
 
 const Signup: React.FC = () => {
-  const API_BASE_URL = 'https://4fd6tgu6vf.execute-api.us-east-1.amazonaws.com/prod';
+  const API_BASE_URL = 'https://1bax65klkk.execute-api.us-east-1.amazonaws.com/prod';
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
